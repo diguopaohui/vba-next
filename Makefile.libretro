@@ -249,7 +249,6 @@ else
 endif
    CFLAGS   += $(MINVERSION)
    CXXFLAGS += $(MINVERSION)
-   LDFLAGS  += $(MINVERSION)
    TILED_RENDERING=1
 
 else ifeq ($(platform), tvos-arm64)
@@ -266,10 +265,6 @@ endif
 
    CC = cc -arch arm64 -isysroot $(IOSSDK)
    CXX = c++ -arch arm64 -isysroot $(IOSSDK)
-   MINVERSION = -mappletvos-version-min=11.0
-   CFLAGS   += $(MINVERSION)
-   CXXFLAGS += $(MINVERSION)
-   LDFLAGS  += $(MINVERSION)
 
 # Theos iOS
 else ifeq ($(platform), theos_ios)
@@ -393,8 +388,8 @@ else ifeq ($(platform), wiiu)
    CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
    AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
    ENDIANNESS_DEFINES += -DMSB_FIRST
-   PLATFORM_DEFINES += -DGEKKO -DWIIU -DHW_RVL -mcpu=750 -meabi -mhard-float -D__ppc__
-   PLATFORM_DEFINES += -ffunction-sections -fdata-sections -D__wiiu__ -D__wut__
+   PLATFORM_DEFINES += -DGEKKO -DWIIU -DHW_RVL -mwup -mcpu=750 -meabi -mhard-float -D__ppc__
+   PLATFORM_DEFINES += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int
    STATIC_LINKING = 1
    TILED_RENDERING=1
 

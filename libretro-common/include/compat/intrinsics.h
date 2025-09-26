@@ -1,4 +1,4 @@
-/* Copyright  (C) 2010-2020 The RetroArch team
+/* Copyright  (C) 2010-2016 The RetroArch team
  *
  * ---------------------------------------------------------------------------------------
  * The following license statement only applies to this file (intrinsics.h).
@@ -30,10 +30,8 @@
 #include <retro_common_api.h>
 #include <retro_inline.h>
 
-#if defined(_MSC_VER) && !defined(_XBOX)
-#if (_MSC_VER > 1310)
+#ifdef _MSC_VER
 #include <intrin.h>
-#endif
 #endif
 
 RETRO_BEGIN_DECLS
@@ -41,7 +39,7 @@ RETRO_BEGIN_DECLS
 /* Count Leading Zero, unsigned 16bit input value */
 static INLINE unsigned compat_clz_u16(uint16_t val)
 {
-#if defined(__GNUC__)
+#ifdef __GNUC__
    return __builtin_clz(val << 16 | 0x8000);
 #else
    unsigned ret = 0;
@@ -57,42 +55,34 @@ static INLINE unsigned compat_clz_u16(uint16_t val)
 }
 
 /* Count Trailing Zero */
+#if defined(__GNUC__) && !defined(RARCH_CONSOLE)
 static INLINE int compat_ctz(unsigned x)
 {
-#if defined(__GNUC__) && !defined(RARCH_CONSOLE)
    return __builtin_ctz(x);
-#elif _MSC_VER >= 1400 && !defined(_XBOX) && !defined(__WINRT__)
-   unsigned long r = 0;
-   _BitScanForward((unsigned long*)&r, x);
-   return (int)r;
-#else
-   int count = 0;
-   if (!(x & 0xffff))
-   {
-      x >>= 16;
-      count |= 16;
-   }
-   if (!(x & 0xff))
-   {
-      x >>= 8;
-      count |= 8;
-   }
-   if (!(x & 0xf))
-   {
-      x >>= 4;
-      count |= 4;
-   }
-   if (!(x & 0x3))
-   {
-      x >>= 2;
-      count |= 2;
-   }
-   if (!(x & 0x1))
-      count |= 1;
-
-   return count;
-#endif
 }
+#elif _MSC_VER >= 1400
+static INLINE int compat_ctz(unsigned x)
+{
+   unsigned long r = 0;
+   _BitScanReverse((unsigned long*)&r, x);
+   return (int)r;
+}
+#else
+/* Only checks at nibble granularity, 
+ * because that's what we need. */
+static INLINE int compat_ctz(unsigned x)
+{
+   if (x & 0x000f)
+      return 0;
+   if (x & 0x00f0)
+      return 4;
+   if (x & 0x0f00)
+      return 8;
+   if (x & 0xf000)
+      return 12;
+   return 16;
+}
+#endif
 
 RETRO_END_DECLS
 
